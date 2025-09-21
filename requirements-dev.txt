@@ -1,0 +1,28 @@
+# Dependências de desenvolvimento e teste
+
+# Framework de testes
+pytest>=7.0.0
+pytest-cov>=4.0.0          # Cobertura de código
+pytest-mock>=3.10.0        # Mocks avançados
+pytest-xdist>=3.0.0        # Execução paralela de testes
+
+# Qualidade de código
+flake8>=6.0.0              # Linting
+black>=23.0.0              # Formatação de código
+isort>=5.12.0              # Organização de imports
+mypy>=1.0.0                # Type checking
+
+# Desenvolvimento
+ipython>=8.0.0             # Shell interativo melhorado
+ipdb>=0.13.0               # Debugger
+pre-commit>=3.0.0          # Git hooks
+
+# Documentação
+sphinx>=6.0.0              # Geração de documentação
+sphinx-rtd-theme>=1.2.0    # Tema para documentação
+
+# Dependências base (também em requirements.txt)
+pgzero>=1.2.1
+pygame>=2.0.0
+Pillow>=8.0.0
+numpy>=1.20.0
