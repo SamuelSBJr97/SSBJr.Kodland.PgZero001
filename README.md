@@ -74,22 +74,38 @@ python src/main.py
 
 ### 🎮 Método Principal (Recomendado):
 ```bash
+# Ativar ambiente virtual (se não estiver ativo)
+.venv\Scripts\activate    # Windows
+# ou
+source .venv/bin/activate # Linux/macOS
+
+# Executar o jogo
+cd src
+python main.py
+```
+
+### 🐍 Método Alternativo com pgzrun:
+```bash
 cd src
 pgzrun main.py
 ```
 
-### 🐍 Método Alternativo:
+### 🎯 Scripts de Conveniência:
 ```bash
-python src/main.py
+# Script Python (multiplataforma)
+python run_game.py
+
+# Script Windows Batch
+run_game.bat
+
+# Validar configuração do ambiente
+python validate_setup.py
 ```
 
-### 🎯 Execução Rápida:
-```bash
-# Executar diretamente do diretório raiz
-python -m src.main
-```
-
-> **💡 Dica:** Se você receber erro sobre `pgzrun` não encontrado, certifique-se de que as dependências foram instaladas corretamente.
+> **💡 Dica:** Se você receber erro sobre módulos não encontrados, certifique-se de que:
+> 1. O ambiente virtual está ativo
+> 2. As dependências foram instaladas: `pip install -r requirements.txt`
+> 3. Execute `python validate_setup.py` para verificar o ambiente
 
 ## 📁 Estrutura do Projeto
 
@@ -393,6 +409,66 @@ tests/
 3. 🎨 Crie seus próprios assets
 4. 🌟 Publique seu jogo no GitHub
 5. 🏆 Participe de game jams
+
+## 🛠️ Troubleshooting
+
+### ❌ **Problemas Comuns e Soluções:**
+
+#### **Erro: "No module named 'pgzrun'"**
+```bash
+# Solução: Ativar ambiente virtual e instalar dependências
+.venv\Scripts\activate  # Windows
+pip install -r requirements.txt
+```
+
+#### **Erro: "No module named 'pygame'"**
+```bash
+# Instalar pygame manualmente
+pip install pygame>=2.0.0
+```
+
+#### **Erro: "pygame.error: No available video device"**
+```bash
+# No Linux, instalar dependências do sistema
+sudo apt-get install python3-pygame
+```
+
+#### **Sprites não encontrados**
+```bash
+# Executar script de validação que cria sprites básicos
+python validate_setup.py
+```
+
+#### **Jogo não abre/fecha imediatamente**
+- Verifique se há erros no console
+- Execute `python validate_setup.py` para diagnóstico
+- Certifique-se de que o ambiente virtual está ativo
+
+### 🔧 **Scripts de Diagnóstico:**
+
+```bash
+# Validar ambiente completo
+python validate_setup.py
+
+# Verificar dependências Python
+python -c "import pgzero, pygame; print('✅ Tudo OK!')"
+
+# Testar criação de sprites
+python -c "
+import pygame
+pygame.init()
+print('Pygame versão:', pygame.version.ver)
+"
+```
+
+### 📱 **Suporte por Plataforma:**
+
+| Plataforma | Status | Notas |
+|------------|--------|-------|
+| **Windows 10/11** | ✅ Testado | Use PowerShell ou CMD |
+| **macOS** | ✅ Compatível | Testado em macOS 10.14+ |
+| **Linux Ubuntu** | ✅ Compatível | Instale dependências do sistema |
+| **Linux outras** | ⚠️ Não testado | Deve funcionar com ajustes |
 
 ## 🤝 Contribuindo
 
