@@ -1,0 +1,53 @@
+{
+  "books": [
+    {
+      "id": "somas",
+      "title": "Somas Básicas",
+      "points": 2,
+      "text": "Somas Básicas\n\nNesta leitura você verá os princípios das operações de adição. A adição é a operação matemática que combina duas quantidades em uma única soma.\n\nExemplos:\n- 1 + 1 = 2\n- 2 + 3 = 5\n\nPropriedades:\n- Comutativa: a + b = b + a\n- Associativa: (a + b) + c = a + (b + c)\n\nExercício prático: calcule 47 + 38 — para resolver, some as dezenas e depois as unidades.\n\nFim do texto."
+    },
+    {
+      "id": "python-intro",
+      "title": "Introdução ao Python",
+      "points": 3,
+      "text": "Introdução ao Python\n\nPython é uma linguagem de programação de alto nível, com tipagem dinâmica e foco em legibilidade.\n\nTipos básicos:\n- int: números inteiros (ex: 1, 42)\n- float: números com ponto (ex: 3.14)\n- str: strings (ex: 'olá')\n- list: listas (ex: [1,2,3])\n\nControle de fluxo:\nif condicao:\n    # bloco\nelse:\n    # outro bloco\n\nFunções:\ndef soma(a, b):\n    return a + b\n\nFim do texto."
+    },
+    {
+      "id": "logica",
+      "title": "Lógica Básica",
+      "points": 2,
+      "text": "Lógica Básica\n\nOperadores lógicos comuns:\n- AND: verdadeiro se ambos operandos forem verdadeiros\n- OR: verdadeiro se ao menos um for verdadeiro\n- NOT: inverte o valor lógico\n\nTabela verdade para AND:\nTrue AND True = True\nTrue AND False = False\nFalse AND True = False\nFalse AND False = False\n\nFim do texto."
+    }
+  ],
+  "guardians": [
+    {
+      "id": "guard-1",
+      "x": 280,
+      "y": 200,
+      "required_score": 2,
+      "questions": [
+        {"question": "Quanto é 2+2?", "choices": ["3","4","5"], "answer": "4"},
+        {"question": "Python tipo de 1?", "choices": ["str","int","list"], "answer": "int"},
+        {"question": "True AND False = ?", "choices": ["True","False","None"], "answer": "False"}
+      ]
+    },
+    {
+      "id": "guard-2",
+      "x": 520,
+      "y": 380,
+      "required_score": 4,
+      "questions": [
+        {"question": "Quanto é 3+5?", "choices": ["6","8","9"], "answer": "8"},
+        {"question": "Qual tipo é 'abc'?", "choices": ["str","int","float"], "answer": "str"},
+        {"question": "False OR True = ?", "choices": ["False","True","None"], "answer": "True"}
+      ]
+    }
+  ],
+  "placements": {
+    "books": [
+      {"book_id": "somas", "x": 140, "y": 110},
+      {"book_id": "python-intro", "x": 460, "y": 140},
+      {"book_id": "logica", "x": 260, "y": 360}
+    ]
+  }
+}
