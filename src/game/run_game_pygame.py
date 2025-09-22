@@ -6,6 +6,7 @@ import pygame
 from pathlib import Path
 import sys
 import textwrap
+import json
 
 ROOT = Path(__file__).resolve().parent.parent
 IMG_DIR = ROOT / 'src' / 'game' / 'images'
@@ -84,17 +85,46 @@ def main():
         {'x': 200, 'y': 320, 'w': 360, 'h': 200},
     ]
 
-    # place books inside rooms
-    books = [
-        Book(140, 110, text='Este é um livro sobre somas. Leia até o fim para ganhar 2 pontos.' , points=2),
-        Book(460, 140, text='Livro: Introdução ao Python. Leia para ganhar 3 pontos.', points=3),
-        Book(260, 360, text='Livro de lógica. Chegue ao fim para 2 pontos.', points=2),
-    ]
-
-    guardians = [
-        Guardian(280, 200, required_score=2, questions=make_sample_questions()),
-        Guardian(520, 380, required_score=4, questions=make_sample_questions()),
-    ]
+    # load game.json if present
+    GAME_JSON = ROOT / 'src' / 'game' / 'game.json'
+    books = []
+    guardians = []
+    if GAME_JSON.exists():
+        try:
+            with open(GAME_JSON, 'r', encoding='utf-8') as f:
+                data = json.load(f)
+            # create book objects from placements linking to book definitions
+            book_defs = {b['id']: b for b in data.get('books', [])}
+            for p in data.get('placements', {}).get('books', []):
+                bid = p.get('book_id')
+                bd = book_defs.get(bid)
+                text = bd.get('text') if bd else 'Sem texto.'
+                points = bd.get('points', 1) if bd else 1
+                books.append(Book(p.get('x', 0), p.get('y', 0), text=text, points=points))
+            # guardians
+            for g in data.get('guardians', []):
+                guardians.append(Guardian(g.get('x', 0), g.get('y', 0), required_score=g.get('required_score', 0), questions=g.get('questions', [])))
+        except Exception:
+            # fallback to defaults below
+            books = [
+                Book(140, 110, text='Este é um livro sobre somas. Leia até o fim para ganhar 2 pontos.' , points=2),
+                Book(460, 140, text='Livro: Introdução ao Python. Leia para ganhar 3 pontos.', points=3),
+                Book(260, 360, text='Livro de lógica. Chegue ao fim para 2 pontos.', points=2),
+            ]
+            guardians = [
+                Guardian(280, 200, required_score=2, questions=make_sample_questions()),
+                Guardian(520, 380, required_score=4, questions=make_sample_questions()),
+            ]
+    else:
+        books = [
+            Book(140, 110, text='Este é um livro sobre somas. Leia até o fim para ganhar 2 pontos.' , points=2),
+            Book(460, 140, text='Livro: Introdução ao Python. Leia para ganhar 3 pontos.', points=3),
+            Book(260, 360, text='Livro de lógica. Chegue ao fim para 2 pontos.', points=2),
+        ]
+        guardians = [
+            Guardian(280, 200, required_score=2, questions=make_sample_questions()),
+            Guardian(520, 380, required_score=4, questions=make_sample_questions()),
+        ]
 
     px, py = WIDTH // 2, HEIGHT // 2
     speed = 240
@@ -115,8 +145,10 @@ def main():
     g_choices = []
     g_selected = []
     g_q_index = 0
+    g_results = []  # None until evaluated, then True/False per question
 
     running = True
+    result_timer = 0.0
     while running:
         dt = clock.tick(FPS) / 1000.0
         for ev in pygame.event.get():
@@ -194,24 +226,24 @@ def main():
                     elif ev.key == pygame.K_SPACE:
                         # evaluate if all answered
                         if all(x is not None for x in g_selected):
+                            # evaluate answers and store results per question
+                            g_results = []
                             correct = 0
                             for i, q in enumerate(g_questions):
-                                if g_choices[i][g_selected[i]].strip().lower() == str(q['answer']).strip().lower():
+                                is_correct = (g_choices[i][g_selected[i]].strip().lower() == str(q['answer']).strip().lower())
+                                g_results.append(is_correct)
+                                if is_correct:
                                     correct += 1
+                            # if all correct, mark guardian defeated and award points
                             if correct == len(g_questions):
-                                # award points and mark guardian defeated
-                                # find guardian near player
                                 for g in guardians:
                                     if pygame.Rect(px-24,py-24,48,48).colliderect(g.rect()):
                                         g.defeated = True
                                         player_score += 2
                                         break
-                            # exit question mode
-                            mode = 'play'
-                            g_questions = []
-                            g_choices = []
-                            g_selected = []
-                            g_q_index = 0
+                            # display results until user presses SPACE again to close
+                            mode = 'guard_question_results'
+                            result_timer = 0.0
 
         # movement
         if mode == 'play':
@@ -285,7 +317,7 @@ def main():
             screen.blit(hint, (box_x + 10, box_y + box_h - 30))
 
         # guardian question UI
-        if mode == 'guard_question' and g_questions:
+        if (mode == 'guard_question' or mode == 'guard_question_results') and g_questions:
             box_h = 320
             box_w = 720
             box_x = 40
@@ -300,11 +332,41 @@ def main():
             for i, choice in enumerate(g_choices[g_q_index]):
                 prefix = str(i+1) + ') '
                 sel = g_selected[g_q_index] == i
-                col = (0, 120, 0) if sel else (40, 40, 40)
+                # before evaluation: highlight selection in a blue tint
+                if mode == 'guard_question' and sel:
+                    bg = pygame.Surface((box_w - 40, 28))
+                    # light-blue background and dark-blue text for the selected option
+                    bg.fill((180, 210, 255))
+                    screen.blit(bg, (box_x + 20, box_y + 60 + i * 30 - 2))
+                    col = (10, 40, 140)
+                else:
+                    col = (40, 40, 40)
+                # after evaluation, color green/red based on g_results
+                if mode == 'guard_question_results' and g_results:
+                    is_correct = g_results[g_q_index]
+                    # color each choice individually: chosen one green/red, others grey
+                    if g_selected[g_q_index] == i:
+                        col = (0, 160, 0) if is_correct else (200, 30, 30)
+                    else:
+                        col = (100, 100, 100)
+
                 txt = font.render(prefix + choice, True, col)
                 screen.blit(txt, (box_x + 20, box_y + 60 + i * 30))
             hint = font.render('1/2/3 select, ←/→ nav, SPACE confirm', True, (80, 80, 80))
             screen.blit(hint, (box_x + 10, box_y + box_h - 30))
+
+        # handle results timer and exit when in results mode
+        if mode == 'guard_question_results':
+            result_timer += dt
+            # allow user to press SPACE to close immediately
+            # after 3 seconds auto-close
+            if result_timer > 3.0:
+                mode = 'play'
+                g_questions = []
+                g_choices = []
+                g_selected = []
+                g_results = []
+                g_q_index = 0
 
         pygame.display.flip()
 
