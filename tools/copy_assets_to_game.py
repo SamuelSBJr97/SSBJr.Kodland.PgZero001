@@ -3,12 +3,15 @@ from pathlib import Path
 import shutil
 
 ROOT = Path(__file__).resolve().parent.parent
-SRC_ASSETS = ROOT / 'tools' / 'assets'
-DST = ROOT / 'src' / 'game' / 'assets'
-DST.mkdir(parents=True, exist_ok=True)
 
-for p in SRC_ASSETS.glob('*.png'):
-    shutil.copy2(p, DST / p.name)
-    print('copied', p.name)
 
-print('All copied to', DST)
+"""Stub: copy_assets_to_game is deprecated and moved to tools/unused.
+
+This file is intentionally left as a no-op to avoid accidental execution.
+"""
+
+def main():
+    print('copy_assets_to_game is unused — see tools/unused for archived helpers')
+
+if __name__ == '__main__':
+    main()

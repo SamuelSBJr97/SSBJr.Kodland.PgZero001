@@ -3,6 +3,7 @@
 Use arrow keys to move. Loads images from src/game/images if available.
 """
 import pygame
+import random
 from pathlib import Path
 import sys
 import textwrap
@@ -74,6 +75,95 @@ def main():
     pygame.display.set_caption('Run Game (pygame standalone) - Books & Guardians')
     clock = pygame.time.Clock()
 
+    # helper: add rooms adjacent to existing rooms (up/down/left/right)
+    def add_adjacent_room(base_room=None, max_tries=12):
+        # choose a set of base rooms to try; if none exist, use a center base
+        bases = [base_room] if base_room else (rooms.copy() if rooms else [])
+        if not bases:
+            bases = [{'x': WIDTH//2-100, 'y': HEIGHT//2-60, 'w':200, 'h':120}]
+
+        # try each base room and each direction deterministically to avoid overlap
+        w = random.randint(160, 300)
+        h = random.randint(120, 240)
+        gap = 8
+        tried = []
+        for base in random.sample(bases, len(bases)):
+            for dir in ['right', 'left', 'down', 'up']:
+                if dir == 'up':
+                    x = base['x'] + (base['w'] - w)//2 + random.randint(-20, 20)
+                    y = base['y'] - h - gap
+                elif dir == 'down':
+                    x = base['x'] + (base['w'] - w)//2 + random.randint(-20, 20)
+                    y = base['y'] + base['h'] + gap
+                elif dir == 'left':
+                    x = base['x'] - w - gap
+                    y = base['y'] + (base['h'] - h)//2 + random.randint(-20, 20)
+                else:  # right
+                    x = base['x'] + base['w'] + gap
+                    y = base['y'] + (base['h'] - h)//2 + random.randint(-20, 20)
+                # clamp to screen
+                x = max(0, min(WIDTH - w - 10, x))
+                y = max(40, min(HEIGHT - h - 10, y))
+                newr = {'x': x, 'y': y, 'w': w, 'h': h}
+                tried.append((base, dir, newr))
+                # check overlap
+                nr = pygame.Rect(newr['x'], newr['y'], newr['w'], newr['h'])
+                overlap = False
+                for ex in rooms:
+                    er = pygame.Rect(ex['x'], ex['y'], ex['w'], ex['h'])
+                    if nr.colliderect(er):
+                        overlap = True
+                        break
+                if not overlap:
+                    rooms.append(newr)
+                    print(f'[spawn] added room adjacent ({dir}) at ({x},{y},{w},{h})')
+                    return newr
+
+        # if all adjacency attempts failed, try a few random placements near random bases
+        for attempt in range(max_tries):
+            base = random.choice(bases)
+            x = base['x'] + random.randint(-base['w']//2, base['w'])
+            y = base['y'] + random.randint(-base['h']//2, base['h'])
+            x = max(0, min(WIDTH - w - 10, x))
+            y = max(40, min(HEIGHT - h - 10, y))
+            newr = {'x': x, 'y': y, 'w': w, 'h': h}
+            nr = pygame.Rect(newr['x'], newr['y'], newr['w'], newr['h'])
+            overlap = any(nr.colliderect(pygame.Rect(ex['x'], ex['y'], ex['w'], ex['h'])) for ex in rooms)
+            if not overlap:
+                rooms.append(newr)
+                print(f'[spawn] added room near base (fallback) at ({x},{y},{w},{h})')
+                return newr
+
+        # final fallback: append overlapping room
+        rooms.append(newr)
+        print(f'[spawn] added room (final fallback) at ({newr["x"]},{newr["y"]},{newr["w"]},{newr["h"]})')
+        return newr
+
+    def add_rooms(n):
+        for _ in range(n):
+            base = random.choice(rooms) if rooms else None
+            add_adjacent_room(base_room=base)
+
+    def spawn_guardians(n, pick_rooms=None):
+        # spawn n guardians, selecting rooms from pick_rooms or random existing rooms
+        for i in range(n):
+            if pick_rooms:
+                r = random.choice(pick_rooms)
+            else:
+                if rooms:
+                    r = random.choice(rooms)
+                else:
+                    # fallback: spawn near center
+                    r = {'x': WIDTH//2 - 100, 'y': HEIGHT//2 - 50, 'w': 200, 'h': 120}
+            gx = r['x'] + r['w']//2 + random.randint(-20, 20)
+            gy = r['y'] + r['h']//2 + random.randint(-20, 20)
+            # questions from sample; required score scales slightly
+            q = make_sample_questions()
+            req = max(0, player_score)
+            newg = Guardian(gx, gy, required_score=req, questions=q)
+            guardians.append(newg)
+            print(f'[spawn] guardian at ({gx},{gy}) in room ({r["x"]},{r["y"]})')
+
     floor = load_image('floor.png', fallback_color=(200, 200, 200), size=(64, 64))
     wall = load_image('wall.png', fallback_color=(120, 120, 120), size=(64, 64))
     player_img = load_image('player.png', fallback_color=(30, 144, 255), size=(32, 32))
@@ -134,6 +224,7 @@ def main():
     # UI states
     mode = 'play'  # 'play', 'reading', 'guard_question'
     active_book = None
+    active_guardian = None
     # reading state
     read_lines = []
     scroll_y = 0
@@ -185,11 +276,15 @@ def main():
                                     scroll_y = 0
                                 else:
                                     # start questions
-                                    mode = 'guard_question'
-                                    g_questions = g.questions
-                                    g_choices = [q['choices'] for q in g_questions]
-                                    g_selected = [None] * len(g_questions)
-                                    g_q_index = 0
+                                            mode = 'guard_question'
+                                            active_guardian = g
+                                            g_questions = g.questions
+                                            g_choices = [q.get('choices', []) for q in g_questions]
+                                            g_selected = [None] * len(g_questions)
+                                            # per-question results: None=not answered, True/False after evaluation
+                                            g_results = [None] * len(g_questions)
+                                            g_q_index = 0
+                                            print(f'[guard] starting questions ({len(g_questions)} items) for guardian at ({g.x},{g.y})')
                                 interacted = True
                                 break
                     # movement keys handled below
@@ -213,37 +308,85 @@ def main():
                         scroll_y = 0
                 elif mode == 'guard_question':
                     # map 1/2/3 keys to choices for current question
-                    if ev.key == pygame.K_1:
+                    if ev.key == pygame.K_1 or ev.key == pygame.K_KP1:
+                        if g_q_index >= len(g_selected):
+                            g_selected = (g_selected + [None] * (g_q_index - len(g_selected) + 1))
                         g_selected[g_q_index] = 0
-                    elif ev.key == pygame.K_2:
+                        print(f'[guard] selected q{g_q_index} -> 0')
+                    elif ev.key == pygame.K_2 or ev.key == pygame.K_KP2:
+                        if g_q_index >= len(g_selected):
+                            g_selected = (g_selected + [None] * (g_q_index - len(g_selected) + 1))
                         g_selected[g_q_index] = 1
-                    elif ev.key == pygame.K_3:
+                        print(f'[guard] selected q{g_q_index} -> 1')
+                    elif ev.key == pygame.K_3 or ev.key == pygame.K_KP3:
+                        if g_q_index >= len(g_selected):
+                            g_selected = (g_selected + [None] * (g_q_index - len(g_selected) + 1))
                         g_selected[g_q_index] = 2
+                        print(f'[guard] selected q{g_q_index} -> 2')
                     elif ev.key == pygame.K_RIGHT:
                         g_q_index = min(len(g_questions)-1, g_q_index+1)
                     elif ev.key == pygame.K_LEFT:
                         g_q_index = max(0, g_q_index-1)
                     elif ev.key == pygame.K_SPACE:
-                        # evaluate if all answered
-                        if all(x is not None for x in g_selected):
-                            # evaluate answers and store results per question
-                            g_results = []
-                            correct = 0
-                            for i, q in enumerate(g_questions):
-                                is_correct = (g_choices[i][g_selected[i]].strip().lower() == str(q['answer']).strip().lower())
-                                g_results.append(is_correct)
-                                if is_correct:
-                                    correct += 1
-                            # if all correct, mark guardian defeated and award points
-                            if correct == len(g_questions):
-                                for g in guardians:
-                                    if pygame.Rect(px-24,py-24,48,48).colliderect(g.rect()):
-                                        g.defeated = True
-                                        player_score += 2
-                                        break
-                            # display results until user presses SPACE again to close
-                            mode = 'guard_question_results'
-                            result_timer = 0.0
+                        # if current question has a selection, evaluate it now (per-question answer)
+                        if g_q_index < len(g_selected) and g_selected[g_q_index] is not None:
+                            sel = g_selected[g_q_index]
+                            q = g_questions[g_q_index]
+                            try:
+                                is_correct = (g_choices[g_q_index][sel].strip().lower() == str(q.get('answer')).strip().lower())
+                            except Exception:
+                                is_correct = False
+                            # ensure g_results length
+                            if g_q_index >= len(g_results):
+                                g_results = (g_results + [None] * (g_q_index - len(g_results) + 1))
+                            g_results[g_q_index] = is_correct
+                            # auto-advance to next unanswered question if any
+                            next_unanswered = None
+                            for idx in range(len(g_questions)):
+                                if g_results[idx] is None:
+                                    next_unanswered = idx
+                                    break
+                            if next_unanswered is not None:
+                                g_q_index = next_unanswered
+                            else:
+                                # all questions have been answered -> show final results
+                                correct = sum(1 for r in g_results if r)
+                                print(f'[guard] final results: {g_results} -> {correct}/{len(g_questions)} correct')
+                                if correct == len(g_questions) and active_guardian is not None:
+                                    active_guardian.defeated = True
+                                    player_score += 2
+                                    print(f'[guard] guardian at ({active_guardian.x},{active_guardian.y}) defeated')
+                                    # when a guardian is defeated, spawn one extra guardian
+                                    spawn_guardians(1)
+                                # when finishing a guardian questionnaire, generate 3 rooms + 2 guardians
+                                add_rooms(3)
+                                spawn_guardians(2)
+                                mode = 'guard_question_results'
+                                result_timer = 0.0
+                                # keep active_guardian until results closed
+                        else:
+                            # if space pressed with no selection, and we're in results mode, allow closing
+                            pass
+                elif mode == 'guard_question_results':
+                    # allow pressing SPACE to close results and return to play
+                    if ev.key == pygame.K_SPACE:
+                        mode = 'play'
+                        g_questions = []
+                        g_choices = []
+                        g_selected = []
+                        g_results = []
+                        g_q_index = 0
+                        active_guardian = None
+                # allow quitting the questionnaire early with Q
+                if mode == 'guard_question' and ev.key == pygame.K_q:
+                    print('[guard] questionnaire aborted by player')
+                    mode = 'play'
+                    g_questions = []
+                    g_choices = []
+                    g_selected = []
+                    g_results = []
+                    g_q_index = 0
+                    active_guardian = None
 
         # movement
         if mode == 'play':
@@ -332,6 +475,8 @@ def main():
             for i, choice in enumerate(g_choices[g_q_index]):
                 prefix = str(i+1) + ') '
                 sel = g_selected[g_q_index] == i
+                # default text color
+                col = (40, 40, 40)
                 # before evaluation: highlight selection in a blue tint
                 if mode == 'guard_question' and sel:
                     bg = pygame.Surface((box_w - 40, 28))
@@ -339,15 +484,34 @@ def main():
                     bg.fill((180, 210, 255))
                     screen.blit(bg, (box_x + 20, box_y + 60 + i * 30 - 2))
                     col = (10, 40, 140)
-                else:
-                    col = (40, 40, 40)
-                # after evaluation, color green/red based on g_results
-                if mode == 'guard_question_results' and g_results:
-                    is_correct = g_results[g_q_index]
-                    # color each choice individually: chosen one green/red, others grey
-                    if g_selected[g_q_index] == i:
-                        col = (0, 160, 0) if is_correct else (200, 30, 30)
+
+                # if the current question has been evaluated, mark correct/incorrect immediately
+                try:
+                    answered = (g_results and g_results[g_q_index] is not None)
+                except Exception:
+                    answered = False
+                if answered or (mode == 'guard_question_results' and g_results):
+                    # determine correct choice index for this question
+                    correct_index = None
+                    ans = q.get('answer')
+                    for ci, ch in enumerate(g_choices[g_q_index]):
+                        if str(ch).strip().lower() == str(ans).strip().lower():
+                            correct_index = ci
+                            break
+                    # correct choice: green background
+                    if correct_index is not None and i == correct_index:
+                        bg = pygame.Surface((box_w - 40, 28))
+                        bg.fill((200, 255, 200))
+                        screen.blit(bg, (box_x + 20, box_y + 60 + i * 30 - 2))
+                        col = (0, 120, 0)
+                    # chosen but wrong: red background
+                    elif g_selected[g_q_index] == i and (g_results and not g_results[g_q_index]):
+                        bg = pygame.Surface((box_w - 40, 28))
+                        bg.fill((255, 200, 200))
+                        screen.blit(bg, (box_x + 20, box_y + 60 + i * 30 - 2))
+                        col = (160, 0, 0)
                     else:
+                        # non-relevant choices are muted
                         col = (100, 100, 100)
 
                 txt = font.render(prefix + choice, True, col)

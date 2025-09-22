@@ -5,10 +5,17 @@ import shutil
 ROOT = Path(__file__).resolve().parent.parent
 SRC = ROOT / 'src' / 'game' / 'assets'
 DST = ROOT / 'src' / 'game' / 'images'
-DST.mkdir(parents=True, exist_ok=True)
+"""Stub: move_assets_to_images is deprecated and moved to tools/unused.
 
-for p in SRC.glob('*.png'):
-    shutil.copy2(p, DST / p.name)
-    print('moved', p.name)
+This file is intentionally left as a no-op to avoid accidental execution.
+"""
+
+def main():
+    print('move_assets_to_images is unused — see tools/unused for archived helpers')
+
+if __name__ == '__main__':
+    main()
+    
+print('All assets moved to', DST)
 
 print('All assets moved to', DST)
