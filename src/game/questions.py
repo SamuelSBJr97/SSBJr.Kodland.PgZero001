@@ -54,4 +54,39 @@ def sample_questions(theme: str, rng, count: int = 3, min_difficulty: int = 1):
     if not pool:
         return []
     rng.shuffle(pool)
-    return pool[:count]
+    selected = pool[:count]
+    # construir choices (três opções) preservando 'answer'
+    out = []
+    for q in selected:
+        correct = str(q.get("answer"))
+        choices = [correct]
+        # gerar dois distractors simples dependendo do tema
+        if theme == "math":
+            try:
+                val = int(correct)
+            except Exception:
+                val = None
+            if val is not None:
+                # +/- small offsets
+                d1 = str(val + rng.randint(1, 5))
+                d2 = str(max(0, val - rng.randint(1, 5)))
+            else:
+                d1 = correct + "?"
+                d2 = "0"
+            choices.extend([d1, d2])
+        elif theme == "logic":
+            # corret answer is usually 'sim' or 'não'
+            alt = "não" if correct.strip().lower() == "sim" else "sim"
+            choices.extend([alt, "talvez"])
+        else:  # python
+            try:
+                val = int(correct)
+                choices.extend([str(val + rng.randint(1, 3)), str(max(0, val - rng.randint(1, 3)))])
+            except Exception:
+                choices.extend([correct + " ", "None"])
+        # shuffle choices but remember which is correct
+        rng.shuffle(choices)
+        q2 = q.copy()
+        q2["choices"] = choices
+        out.append(q2)
+    return out

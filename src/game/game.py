@@ -6,7 +6,7 @@ As partes de jogo (mapa, salas, perguntas) permanecem disponíveis na mesma
 module API para desenvolvimento posterior.
 """
 
-from .settings import WIDTH, HEIGHT
+from .settings import WIDTH, HEIGHT, DEFAULT_SEED, DEFAULT_NUM_ROOMS
 
 from .ui import MENU, DESCRIPTION, format_menu
 from .mapgen import generate_map
@@ -19,15 +19,18 @@ class GameState:
     def __init__(self):
         self.mode = "menu"  # menu, playing
         self.selected_menu = 0
-        self.seed = 42
+        self.seed = DEFAULT_SEED
         self.map = None
         self.current_room = None
         self.player_score = 0
         self.rng = random.Random(self.seed)
 
-    def start_game(self, seed: int = None, num_rooms: int = 10):
+    def start_game(self, seed: int = None, num_rooms: int = None):
+        # usa seed padrão de settings se não informado
         if seed is not None:
             self.seed = seed
+        if num_rooms is None:
+            num_rooms = DEFAULT_NUM_ROOMS
         self.map = generate_map(self.seed, num_rooms=num_rooms)
         self.mode = "playing"
         self.player_score = 0
