@@ -1,0 +1,702 @@
+[
+  {
+    "id": 1,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [1]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 1
+  },
+  {
+    "id": 2,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [2]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 1
+  },
+  {
+    "id": 3,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [3]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 1
+  },
+  {
+    "id": 4,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [4]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 1
+  },
+  {
+    "id": 5,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [5]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 1
+  },
+  {
+    "id": 6,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [6]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 1
+  },
+  {
+    "id": 7,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [7]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 1
+  },
+  {
+    "id": 8,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [8]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 1
+  },
+  {
+    "id": 9,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [9]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 1
+  },
+  {
+    "id": 10,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [10]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 1
+  },
+  {
+    "id": 11,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [11]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 1
+  },
+  {
+    "id": 12,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [12]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 1
+  },
+  {
+    "id": 13,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [13]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 1
+  },
+  {
+    "id": 14,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [14]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 1
+  },
+  {
+    "id": 15,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [15]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 1
+  },
+  {
+    "id": 16,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [16]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 1
+  },
+  {
+    "id": 17,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [17]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 1
+  },
+  {
+    "id": 18,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [18]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 1
+  },
+  {
+    "id": 19,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [19]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 1
+  },
+  {
+    "id": 20,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [20]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 1
+  },
+  {
+    "id": 21,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [21]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 1
+  },
+  {
+    "id": 22,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [22]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 1
+  },
+  {
+    "id": 23,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [23]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 1
+  },
+  {
+    "id": 24,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [24]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 1
+  },
+  {
+    "id": 25,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [25]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 1
+  },
+  {
+    "id": 26,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [26]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 2
+  },
+  {
+    "id": 27,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [27]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 2
+  },
+  {
+    "id": 28,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [28]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 2
+  },
+  {
+    "id": 29,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [29]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 2
+  },
+  {
+    "id": 30,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [30]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 2
+  },
+  {
+    "id": 31,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [31]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 2
+  },
+  {
+    "id": 32,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [32]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 2
+  },
+  {
+    "id": 33,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [33]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 2
+  },
+  {
+    "id": 34,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [34]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 2
+  },
+  {
+    "id": 35,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [35]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 2
+  },
+  {
+    "id": 36,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [36]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 2
+  },
+  {
+    "id": 37,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [37]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 2
+  },
+  {
+    "id": 38,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [38]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 2
+  },
+  {
+    "id": 39,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [39]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 2
+  },
+  {
+    "id": 40,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [40]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 2
+  },
+  {
+    "id": 41,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [41]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 2
+  },
+  {
+    "id": 42,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [42]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 2
+  },
+  {
+    "id": 43,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [43]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 2
+  },
+  {
+    "id": 44,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [44]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 2
+  },
+  {
+    "id": 45,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [45]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 2
+  },
+  {
+    "id": 46,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [46]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 2
+  },
+  {
+    "id": 47,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [47]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 2
+  },
+  {
+    "id": 48,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [48]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 2
+  },
+  {
+    "id": 49,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [49]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 2
+  },
+  {
+    "id": 50,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [50]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 2
+  },
+  {
+    "id": 51,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [51]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 3
+  },
+  {
+    "id": 52,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [52]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 3
+  },
+  {
+    "id": 53,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [53]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 3
+  },
+  {
+    "id": 54,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [54]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 3
+  },
+  {
+    "id": 55,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [55]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 3
+  },
+  {
+    "id": 56,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [56]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 3
+  },
+  {
+    "id": 57,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [57]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 3
+  },
+  {
+    "id": 58,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [58]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 3
+  },
+  {
+    "id": 59,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [59]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 3
+  },
+  {
+    "id": 60,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [60]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 3
+  },
+  {
+    "id": 61,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [61]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 3
+  },
+  {
+    "id": 62,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [62]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 3
+  },
+  {
+    "id": 63,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [63]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 3
+  },
+  {
+    "id": 64,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [64]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 3
+  },
+  {
+    "id": 65,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [65]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 3
+  },
+  {
+    "id": 66,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [66]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 3
+  },
+  {
+    "id": 67,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [67]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 3
+  },
+  {
+    "id": 68,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [68]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 3
+  },
+  {
+    "id": 69,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [69]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 3
+  },
+  {
+    "id": 70,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [70]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 3
+  },
+  {
+    "id": 71,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [71]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 3
+  },
+  {
+    "id": 72,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [72]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 3
+  },
+  {
+    "id": 73,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [73]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 3
+  },
+  {
+    "id": 74,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [74]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 3
+  },
+  {
+    "id": 75,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [75]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 3
+  },
+  {
+    "id": 76,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [76]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 4
+  },
+  {
+    "id": 77,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [77]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 4
+  },
+  {
+    "id": 78,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [78]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 4
+  },
+  {
+    "id": 79,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [79]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 4
+  },
+  {
+    "id": 80,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [80]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 4
+  },
+  {
+    "id": 81,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [81]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 4
+  },
+  {
+    "id": 82,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [82]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 4
+  },
+  {
+    "id": 83,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [83]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 4
+  },
+  {
+    "id": 84,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [84]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 4
+  },
+  {
+    "id": 85,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [85]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 4
+  },
+  {
+    "id": 86,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [86]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 4
+  },
+  {
+    "id": 87,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [87]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 4
+  },
+  {
+    "id": 88,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [88]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 4
+  },
+  {
+    "id": 89,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [89]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 4
+  },
+  {
+    "id": 90,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [90]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 4
+  },
+  {
+    "id": 91,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [91]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 4
+  },
+  {
+    "id": 92,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [92]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 4
+  },
+  {
+    "id": 93,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [93]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 4
+  },
+  {
+    "id": 94,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [94]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 4
+  },
+  {
+    "id": 95,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [95]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 4
+  },
+  {
+    "id": 96,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [96]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 4
+  },
+  {
+    "id": 97,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [97]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 4
+  },
+  {
+    "id": 98,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [98]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 4
+  },
+  {
+    "id": 99,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [99]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 4
+  },
+  {
+    "id": 100,
+    "question": "Se A implica B e B implica C, então A implica C? (sim/não) [100]",
+    "answer": "sim",
+    "explanation": "Transitividade lógica",
+    "difficulty": 5
+  }
+]
