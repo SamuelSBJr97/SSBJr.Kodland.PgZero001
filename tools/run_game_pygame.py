@@ -5,12 +5,14 @@ Use arrow keys to move. Loads images from src/game/images if available.
 import pygame
 from pathlib import Path
 import sys
+import textwrap
 
 ROOT = Path(__file__).resolve().parent.parent
 IMG_DIR = ROOT / 'src' / 'game' / 'images'
 
 WIDTH, HEIGHT = 800, 600
 FPS = 60
+
 
 def load_image(name, fallback_color=None, size=None):
     p = IMG_DIR / name
@@ -27,15 +29,54 @@ def load_image(name, fallback_color=None, size=None):
     surf.fill(fallback_color or (255, 0, 255))
     return surf
 
+
+class Book:
+    def __init__(self, x, y, text, points=1):
+        self.x = x
+        self.y = y
+        self.w = 32
+        self.h = 32
+        self.text = text
+        self.points = points
+        self.read = False
+
+    def rect(self):
+        return pygame.Rect(self.x, self.y, self.w, self.h)
+
+
+class Guardian:
+    def __init__(self, x, y, required_score=1, questions=None):
+        self.x = x
+        self.y = y
+        self.w = 40
+        self.h = 40
+        self.required_score = required_score
+        self.questions = questions or []
+        self.defeated = False
+
+    def rect(self):
+        return pygame.Rect(self.x, self.y, self.w, self.h)
+
+
+def make_sample_questions():
+    # simple MCQ: question dicts with 'question', 'choices', 'answer'
+    return [
+        {'question': 'Quanto é 2+2?', 'choices': ['3', '4', '5'], 'answer': '4'},
+        {'question': 'Python: tipo de 1?','choices': ['str', 'int', 'list'], 'answer': 'int'},
+        {'question': 'Lógica: True AND False =', 'choices': ['True','False','None'], 'answer': 'False'},
+    ]
+
+
 def main():
     pygame.init()
     screen = pygame.display.set_mode((WIDTH, HEIGHT))
-    pygame.display.set_caption('Run Game (pygame standalone)')
+    pygame.display.set_caption('Run Game (pygame standalone) - Books & Guardians')
     clock = pygame.time.Clock()
 
-    floor = load_image('floor.png', fallback_color=(200,200,200), size=(64,64))
-    wall = load_image('wall.png', fallback_color=(120,120,120), size=(64,64))
-    player_img = load_image('player.png', fallback_color=(30,144,255), size=(32,32))
+    floor = load_image('floor.png', fallback_color=(200, 200, 200), size=(64, 64))
+    wall = load_image('wall.png', fallback_color=(120, 120, 120), size=(64, 64))
+    player_img = load_image('player.png', fallback_color=(30, 144, 255), size=(32, 32))
+    book_img = load_image('book.png', fallback_color=(255, 215, 0), size=(32, 32))
 
     rooms = [
         {'x': 100, 'y': 80, 'w': 200, 'h': 140},
@@ -43,8 +84,37 @@ def main():
         {'x': 200, 'y': 320, 'w': 360, 'h': 200},
     ]
 
-    px, py = WIDTH//2, HEIGHT//2
+    # place books inside rooms
+    books = [
+        Book(140, 110, text='Este é um livro sobre somas. Leia até o fim para ganhar 2 pontos.' , points=2),
+        Book(460, 140, text='Livro: Introdução ao Python. Leia para ganhar 3 pontos.', points=3),
+        Book(260, 360, text='Livro de lógica. Chegue ao fim para 2 pontos.', points=2),
+    ]
+
+    guardians = [
+        Guardian(280, 200, required_score=2, questions=make_sample_questions()),
+        Guardian(520, 380, required_score=4, questions=make_sample_questions()),
+    ]
+
+    px, py = WIDTH // 2, HEIGHT // 2
     speed = 240
+
+    player_score = 0
+
+    # UI states
+    mode = 'play'  # 'play', 'reading', 'guard_question'
+    active_book = None
+    # reading state
+    read_lines = []
+    scroll_y = 0
+    font = pygame.font.SysFont('arial', 18)
+    big_font = pygame.font.SysFont('arial', 24, bold=True)
+
+    # guardian question state
+    g_questions = []
+    g_choices = []
+    g_selected = []
+    g_q_index = 0
 
     running = True
     while running:
@@ -55,12 +125,101 @@ def main():
             elif ev.type == pygame.KEYDOWN:
                 if ev.key == pygame.K_ESCAPE:
                     running = False
+                if mode == 'play':
+                    if ev.key == pygame.K_e:
+                        # check for nearby book
+                        interacted = False
+                        pr = pygame.Rect(px - 24, py - 24, 48, 48)
+                        for b in books:
+                            if pr.colliderect(b.rect()) and not b.read:
+                                # start reading
+                                mode = 'reading'
+                                active_book = b
+                                # prepare wrapped lines
+                                read_lines = textwrap.wrap(b.text, width=60)
+                                scroll_y = 0
+                                interacted = True
+                                break
+                        if interacted:
+                            continue
+                        # check for guardian
+                        for g in guardians:
+                            if pr.colliderect(g.rect()) and not g.defeated:
+                                if player_score < g.required_score:
+                                    # show temporary message by starting a short reading-like message
+                                    mode = 'reading'
+                                    active_book = None
+                                    read_lines = [f'Você precisa de {g.required_score} pontos para conversar com o guardião.']
+                                    scroll_y = 0
+                                else:
+                                    # start questions
+                                    mode = 'guard_question'
+                                    g_questions = g.questions
+                                    g_choices = [q['choices'] for q in g_questions]
+                                    g_selected = [None] * len(g_questions)
+                                    g_q_index = 0
+                                interacted = True
+                                break
+                    # movement keys handled below
+                elif mode == 'reading':
+                    # scroll with up/down and finish with space
+                    if ev.key == pygame.K_UP:
+                        scroll_y = max(scroll_y - 40, 0)
+                    elif ev.key == pygame.K_DOWN:
+                        scroll_y += 40
+                    elif ev.key == pygame.K_SPACE:
+                        # if end reached grant points and mark read
+                        if active_book is not None:
+                            # heuristics: if scrolled to bottom or small text
+                            if scroll_y >= max(0, len(read_lines) * 22 - 300):
+                                active_book.read = True
+                                player_score += active_book.points
+                        # exit reading
+                        mode = 'play'
+                        active_book = None
+                        read_lines = []
+                        scroll_y = 0
+                elif mode == 'guard_question':
+                    # map 1/2/3 keys to choices for current question
+                    if ev.key == pygame.K_1:
+                        g_selected[g_q_index] = 0
+                    elif ev.key == pygame.K_2:
+                        g_selected[g_q_index] = 1
+                    elif ev.key == pygame.K_3:
+                        g_selected[g_q_index] = 2
+                    elif ev.key == pygame.K_RIGHT:
+                        g_q_index = min(len(g_questions)-1, g_q_index+1)
+                    elif ev.key == pygame.K_LEFT:
+                        g_q_index = max(0, g_q_index-1)
+                    elif ev.key == pygame.K_SPACE:
+                        # evaluate if all answered
+                        if all(x is not None for x in g_selected):
+                            correct = 0
+                            for i, q in enumerate(g_questions):
+                                if g_choices[i][g_selected[i]].strip().lower() == str(q['answer']).strip().lower():
+                                    correct += 1
+                            if correct == len(g_questions):
+                                # award points and mark guardian defeated
+                                # find guardian near player
+                                for g in guardians:
+                                    if pygame.Rect(px-24,py-24,48,48).colliderect(g.rect()):
+                                        g.defeated = True
+                                        player_score += 2
+                                        break
+                            # exit question mode
+                            mode = 'play'
+                            g_questions = []
+                            g_choices = []
+                            g_selected = []
+                            g_q_index = 0
 
-        keys = pygame.key.get_pressed()
-        dx = (keys[pygame.K_RIGHT] - keys[pygame.K_LEFT])
-        dy = (keys[pygame.K_DOWN] - keys[pygame.K_UP])
-        px += dx * speed * dt
-        py += dy * speed * dt
+        # movement
+        if mode == 'play':
+            keys = pygame.key.get_pressed()
+            dx = (keys[pygame.K_RIGHT] - keys[pygame.K_LEFT])
+            dy = (keys[pygame.K_DOWN] - keys[pygame.K_UP])
+            px += dx * speed * dt
+            py += dy * speed * dt
 
         # draw background tiles
         for x in range(0, WIDTH, 64):
@@ -69,15 +228,88 @@ def main():
 
         # draw rooms
         for r in rooms:
-            pygame.draw.rect(screen, (170,170,170), (r['x'], r['y'], r['w'], r['h']))
+            pygame.draw.rect(screen, (170, 170, 170), (r['x'], r['y'], r['w'], r['h']))
             screen.blit(wall, (r['x'], r['y']))
 
+        # draw books
+        for b in books:
+            if not b.read:
+                screen.blit(book_img, (b.x, b.y))
+            else:
+                # dim read books
+                s = pygame.Surface((b.w, b.h), pygame.SRCALPHA)
+                s.fill((100, 100, 100, 180))
+                screen.blit(s, (b.x, b.y))
+
+        # draw guardians
+        for g in guardians:
+            color = (200, 50, 50) if not g.defeated else (80, 160, 80)
+            pygame.draw.rect(screen, color, (g.x, g.y, g.w, g.h))
+
         # draw player
-        screen.blit(player_img, (int(px)-16, int(py)-16))
+        screen.blit(player_img, (int(px) - 16, int(py) - 16))
+
+        # HUD
+        hud = big_font.render(f'Score: {player_score}', True, (255, 255, 255))
+        screen.blit(hud, (10, 10))
+
+        # interaction hint
+        pr = pygame.Rect(px - 24, py - 24, 48, 48)
+        near_text = ''
+        for b in books:
+            if pr.colliderect(b.rect()) and not b.read:
+                near_text = 'Press E to read book'
+        for g in guardians:
+            if pr.colliderect(g.rect()) and not g.defeated:
+                near_text = f"Press E to talk (requires {g.required_score} pts)"
+        if near_text:
+            tip = font.render(near_text, True, (255, 255, 0))
+            screen.blit(tip, (10, HEIGHT - 30))
+
+        # reading UI
+        if mode == 'reading' and read_lines:
+            box_h = 300
+            box_w = 700
+            box_x = 50
+            box_y = 120
+            pygame.draw.rect(screen, (20, 20, 40, 220), (box_x - 4, box_y - 4, box_w + 8, box_h + 8))
+            pygame.draw.rect(screen, (240, 240, 240), (box_x, box_y, box_w, box_h))
+            # render lines with scroll
+            y = box_y + 10 - scroll_y
+            for line in read_lines:
+                img = font.render(line, True, (10, 10, 10))
+                screen.blit(img, (box_x + 10, y))
+                y += 22
+            # hint
+            hint = font.render('Use UP/DOWN to scroll, SPACE to finish', True, (80, 80, 80))
+            screen.blit(hint, (box_x + 10, box_y + box_h - 30))
+
+        # guardian question UI
+        if mode == 'guard_question' and g_questions:
+            box_h = 320
+            box_w = 720
+            box_x = 40
+            box_y = 80
+            pygame.draw.rect(screen, (30, 30, 60), (box_x - 4, box_y - 4, box_w + 8, box_h + 8))
+            pygame.draw.rect(screen, (250, 250, 250), (box_x, box_y, box_w, box_h))
+            # current question
+            q = g_questions[g_q_index]
+            qtxt = big_font.render(f"Q{g_q_index+1}: {q['question']}", True, (10, 10, 10))
+            screen.blit(qtxt, (box_x + 10, box_y + 10))
+            # choices
+            for i, choice in enumerate(g_choices[g_q_index]):
+                prefix = str(i+1) + ') '
+                sel = g_selected[g_q_index] == i
+                col = (0, 120, 0) if sel else (40, 40, 40)
+                txt = font.render(prefix + choice, True, col)
+                screen.blit(txt, (box_x + 20, box_y + 60 + i * 30))
+            hint = font.render('1/2/3 select, ←/→ nav, SPACE confirm', True, (80, 80, 80))
+            screen.blit(hint, (box_x + 10, box_y + box_h - 30))
 
         pygame.display.flip()
 
     pygame.quit()
+
 
 if __name__ == '__main__':
     main()
