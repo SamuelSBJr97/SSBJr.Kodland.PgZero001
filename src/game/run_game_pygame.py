@@ -75,53 +75,131 @@ def main():
     pygame.display.set_caption('Run Game (pygame standalone) - Books & Guardians')
     clock = pygame.time.Clock()
 
+    # occupancy grid settings (discrete cells for rooms to guarantee empty-adjacent placement)
+    GRID_CELL_W = 320
+    GRID_CELL_H = 240
+    GRID_MARGIN_X = 40
+    GRID_MARGIN_Y = 60
+    # set of occupied cells as (cx, cy)
+    occupied_cells = set()
+
+
     # helper: add rooms adjacent to existing rooms (up/down/left/right)
     def add_adjacent_room(base_room=None, max_tries=12):
+        # First, attempt occupancy-grid based placement if we have an occupancy map
+        def room_cell_coords(r):
+            # map room origin to grid cell
+            cx = int(round((r['x'] - GRID_MARGIN_X) / GRID_CELL_W))
+            cy = int(round((r['y'] - GRID_MARGIN_Y) / GRID_CELL_H))
+            return (cx, cy)
+
+        def cell_world_rect(cx, cy):
+            # return a room dict positioned inside the cell with margins
+            w = GRID_CELL_W - 2 * 20
+            h = GRID_CELL_H - 2 * 20
+            x = cx * GRID_CELL_W + GRID_MARGIN_X + 20
+            y = cy * GRID_CELL_H + GRID_MARGIN_Y + 20
+            # clamp to screen
+            x = max(0, min(WIDTH - w - 10, x))
+            y = max(40, min(HEIGHT - h - 10, y))
+            return {'x': x, 'y': y, 'w': w, 'h': h}
+
         # choose a set of base rooms to try; if none exist, use a center base
         bases = [base_room] if base_room else (rooms.copy() if rooms else [])
         if not bases:
             bases = [{'x': WIDTH//2-100, 'y': HEIGHT//2-60, 'w':200, 'h':120}]
 
+        # occupancy-based neighbor search: prefer an empty neighboring grid cell
+        try:
+            if occupied_cells and bases:
+                # find a real base room dict if base_room provided as small bbox
+                real_bases = []
+                for b in bases:
+                    # prefer actual room dicts already in rooms
+                    if b in rooms:
+                        real_bases.append(b)
+                    else:
+                        # try to find a room that contains this bbox/point
+                        for rr in rooms:
+                            rrect = pygame.Rect(rr['x'], rr['y'], rr['w'], rr['h'])
+                            try:
+                                # if base provided has x/y fields that fall inside rr
+                                if rrect.collidepoint(b.get('x', 0) + b.get('w', 0)//2, b.get('y', 0) + b.get('h', 0)//2):
+                                    real_bases.append(rr)
+                                    break
+                            except Exception:
+                                pass
+                if not real_bases:
+                    real_bases = rooms.copy()
+
+                neighbor_dirs = [(1,0),(-1,0),(0,1),(0,-1)]
+                random.shuffle(real_bases)
+                for rb in real_bases:
+                    bx, by = room_cell_coords(rb)
+                    random_dirs = neighbor_dirs.copy()
+                    random.shuffle(random_dirs)
+                    for dx, dy in random_dirs:
+                        nc = (bx + dx, by + dy)
+                        if nc in occupied_cells:
+                            continue
+                        # occupy and create room at this cell
+                        newr = cell_world_rect(nc[0], nc[1])
+                        rooms.append(newr)
+                        occupied_cells.add(nc)
+                        print(f'[spawn] added room at grid cell {nc} for base cell {(bx,by)}')
+                        return newr
+        except Exception:
+            # fall back to legacy behavior below on any error
+            pass
+
         # try each base room and each direction deterministically to avoid overlap
-        w = random.randint(160, 300)
-        h = random.randint(120, 240)
+        # allow shrinking attempts if space is tight
+        orig_w = random.randint(160, 300)
+        orig_h = random.randint(120, 240)
         gap = 8
         tried = []
         for base in random.sample(bases, len(bases)):
-            for dir in ['right', 'left', 'down', 'up']:
-                if dir == 'up':
-                    x = base['x'] + (base['w'] - w)//2 + random.randint(-20, 20)
-                    y = base['y'] - h - gap
-                elif dir == 'down':
-                    x = base['x'] + (base['w'] - w)//2 + random.randint(-20, 20)
-                    y = base['y'] + base['h'] + gap
-                elif dir == 'left':
-                    x = base['x'] - w - gap
-                    y = base['y'] + (base['h'] - h)//2 + random.randint(-20, 20)
-                else:  # right
-                    x = base['x'] + base['w'] + gap
-                    y = base['y'] + (base['h'] - h)//2 + random.randint(-20, 20)
-                # clamp to screen
-                x = max(0, min(WIDTH - w - 10, x))
-                y = max(40, min(HEIGHT - h - 10, y))
-                newr = {'x': x, 'y': y, 'w': w, 'h': h}
-                tried.append((base, dir, newr))
-                # check overlap
-                nr = pygame.Rect(newr['x'], newr['y'], newr['w'], newr['h'])
-                overlap = False
-                for ex in rooms:
-                    er = pygame.Rect(ex['x'], ex['y'], ex['w'], ex['h'])
-                    if nr.colliderect(er):
-                        overlap = True
-                        break
-                if not overlap:
-                    rooms.append(newr)
-                    print(f'[spawn] added room adjacent ({dir}) at ({x},{y},{w},{h})')
-                    return newr
+            # try a few size reductions if needed
+            for shrink in range(0, 3):
+                w = max(120, int(orig_w * (0.9 ** shrink)))
+                h = max(90, int(orig_h * (0.9 ** shrink)))
+                for dir in ['right', 'left', 'down', 'up']:
+                    if dir == 'up':
+                        x = base['x'] + (base['w'] - w)//2 + random.randint(-20, 20)
+                        y = base['y'] - h - gap
+                    elif dir == 'down':
+                        x = base['x'] + (base['w'] - w)//2 + random.randint(-20, 20)
+                        y = base['y'] + base['h'] + gap
+                    elif dir == 'left':
+                        x = base['x'] - w - gap
+                        y = base['y'] + (base['h'] - h)//2 + random.randint(-20, 20)
+                    else:  # right
+                        x = base['x'] + base['w'] + gap
+                        y = base['y'] + (base['h'] - h)//2 + random.randint(-20, 20)
+                    # clamp to screen
+                    x = max(0, min(WIDTH - w - 10, x))
+                    y = max(40, min(HEIGHT - h - 10, y))
+                    newr = {'x': x, 'y': y, 'w': w, 'h': h}
+                    tried.append((base, dir, shrink, newr))
+                    # check overlap
+                    nr = pygame.Rect(newr['x'], newr['y'], newr['w'], newr['h'])
+                    overlap = False
+                    for ex in rooms:
+                        er = pygame.Rect(ex['x'], ex['y'], ex['w'], ex['h'])
+                        if nr.colliderect(er):
+                            overlap = True
+                            break
+                    if not overlap:
+                        rooms.append(newr)
+                        print(f'[spawn] added room adjacent ({dir}) shrink={shrink} at ({x},{y},{w},{h})')
+                        return newr
 
-        # if all adjacency attempts failed, try a few random placements near random bases
+    # if all adjacency attempts failed, try a few random placements near random bases
         for attempt in range(max_tries):
             base = random.choice(bases)
+            # try random nearby positions with reduced sizes if needed
+            w = max(120, int(orig_w * (0.9 ** (attempt % 3))))
+            h = max(90, int(orig_h * (0.9 ** (attempt % 3))))
             x = base['x'] + random.randint(-base['w']//2, base['w'])
             y = base['y'] + random.randint(-base['h']//2, base['h'])
             x = max(0, min(WIDTH - w - 10, x))
@@ -133,28 +211,100 @@ def main():
                 rooms.append(newr)
                 print(f'[spawn] added room near base (fallback) at ({x},{y},{w},{h})')
                 return newr
+        # More robust fallback: scan a coarse grid over the world bounds for a free slot
+        search_min_x = 0
+        search_min_y = 40
+        search_max_x = WIDTH
+        search_max_y = HEIGHT
+        grid_step = 40
+        for gx in range(search_min_x, search_max_x - orig_w, grid_step):
+            for gy in range(search_min_y, search_max_y - orig_h, grid_step):
+                newr = {'x': gx, 'y': gy, 'w': orig_w, 'h': orig_h}
+                nr = pygame.Rect(newr['x'], newr['y'], newr['w'], newr['h'])
+                overlap = any(nr.colliderect(pygame.Rect(ex['x'], ex['y'], ex['w'], ex['h'])) for ex in rooms)
+                if not overlap:
+                    rooms.append(newr)
+                    print(f'[spawn] added room (grid fallback) at ({gx},{gy},{orig_w},{orig_h})')
+                    return newr
 
-        # final fallback: append overlapping room
+        # final fallback: place overlapping room (very unlikely now)
+        # final fallback: try a few random positions and prefer those that don't overlap rooms
+        # that already contain both a book and guardian
+        def room_has_book_and_guard(r):
+            rr = pygame.Rect(r['x'], r['y'], r['w'], r['h'])
+            has_book = any(rr.colliderect(b.rect()) for b in books)
+            has_guard = any(rr.colliderect(g.rect()) for g in guardians)
+            return has_book and has_guard
+
+        for attempt in range(12):
+            x = random.randint(0, max(0, WIDTH - orig_w - 10))
+            y = random.randint(40, max(40, HEIGHT - orig_h - 10))
+            newr = {'x': x, 'y': y, 'w': orig_w, 'h': orig_h}
+            nr = pygame.Rect(newr['x'], newr['y'], newr['w'], newr['h'])
+            overlaps = [ex for ex in rooms if nr.colliderect(pygame.Rect(ex['x'], ex['y'], ex['w'], ex['h']))]
+            # prefer positions that don't overlap rooms with both book and guardian
+            if overlaps:
+                if any(room_has_book_and_guard(ex) for ex in overlaps):
+                    continue
+            rooms.append(newr)
+            print(f'[spawn] added room (final fallback random) at ({x},{y},{orig_w},{orig_h})')
+            return newr
+
+        # last resort: overlap anywhere
+        newr = {'x': max(0, min(WIDTH-orig_w-10, orig_w)), 'y': 60, 'w': orig_w, 'h': orig_h}
         rooms.append(newr)
-        print(f'[spawn] added room (final fallback) at ({newr["x"]},{newr["y"]},{newr["w"]},{newr["h"]})')
+        print(f'[spawn] added room (final fallback overlap) at ({newr["x"]},{newr["y"]},{newr["w"]},{newr["h"]})')
         return newr
 
     def add_rooms(n):
         for _ in range(n):
             base = random.choice(rooms) if rooms else None
-            add_adjacent_room(base_room=base)
+            newr = add_adjacent_room(base_room=base)
+            # for each new room, place one book and one guardian inside
+            if newr is not None:
+                # create a book inside the room
+                bx = newr['x'] + random.randint(20, max(20, newr['w'] - 40))
+                by = newr['y'] + random.randint(20, max(20, newr['h'] - 40))
+                books.append(Book(bx, by, text='Livro gerado na sala.', points=2))
+                # create a guardian inside the room
+                gx = newr['x'] + newr['w']//2 + random.randint(-10, 10)
+                gy = newr['y'] + newr['h']//2 + random.randint(-10, 10)
+                guardians.append(Guardian(gx, gy, required_score=max(0, player_score), questions=make_sample_questions()))
+                print(f'[spawn] created book+guardian in new room at ({newr["x"]},{newr["y"]})')
 
     def spawn_guardians(n, pick_rooms=None):
         # spawn n guardians, selecting rooms from pick_rooms or random existing rooms
         for i in range(n):
+            # pick a room that doesn't already have a guardian
+            candidate_rooms = []
             if pick_rooms:
-                r = random.choice(pick_rooms)
+                candidate_rooms = [r for r in pick_rooms]
             else:
-                if rooms:
-                    r = random.choice(rooms)
-                else:
-                    # fallback: spawn near center
-                    r = {'x': WIDTH//2 - 100, 'y': HEIGHT//2 - 50, 'w': 200, 'h': 120}
+                candidate_rooms = [r for r in rooms]
+
+            def room_has_guardian(r):
+                rr = pygame.Rect(r['x'], r['y'], r['w'], r['h'])
+                for g in guardians:
+                    if rr.colliderect(g.rect()):
+                        return True
+                return False
+
+            free_rooms = [r for r in candidate_rooms if not room_has_guardian(r)]
+            if not free_rooms:
+                # no free room: create a new adjacent room and use it
+                base = random.choice(rooms) if rooms else None
+                newr = add_adjacent_room(base_room=base)
+                if newr:
+                    # ensure new room has a book too
+                    bx = newr['x'] + random.randint(20, max(20, newr['w'] - 40))
+                    by = newr['y'] + random.randint(20, max(20, newr['h'] - 40))
+                    books.append(Book(bx, by, text='Livro gerado na sala.', points=2))
+                    free_rooms = [newr]
+            if free_rooms:
+                r = random.choice(free_rooms)
+            else:
+                # ultimate fallback: spawn near center
+                r = {'x': WIDTH//2 - 100, 'y': WIDTH//2 - 50, 'w': 200, 'h': 120}
             gx = r['x'] + r['w']//2 + random.randint(-20, 20)
             gy = r['y'] + r['h']//2 + random.randint(-20, 20)
             # questions from sample; required score scales slightly
@@ -164,11 +314,30 @@ def main():
             guardians.append(newg)
             print(f'[spawn] guardian at ({gx},{gy}) in room ({r["x"]},{r["y"]})')
 
+    def populate_room_with_book_guard(r):
+        # place one book and one guardian inside room r
+        bx = r['x'] + random.randint(20, max(20, r['w'] - 40))
+        by = r['y'] + random.randint(20, max(20, r['h'] - 40))
+        books.append(Book(bx, by, text='Livro gerado na sala.', points=2))
+        gx = r['x'] + r['w']//2 + random.randint(-10, 10)
+        gy = r['y'] + r['h']//2 + random.randint(-10, 10)
+        # use a neutral required_score when populating rooms at startup; spawn_guardians uses current score
+        guardians.append(Guardian(gx, gy, required_score=0, questions=make_sample_questions()))
+        print(f'[spawn] populated room with book+guardian at ({r["x"]},{r["y"]})')
+        # mark occupancy for this room
+        try:
+            cx = int(round((r['x'] - GRID_MARGIN_X) / GRID_CELL_W))
+            cy = int(round((r['y'] - GRID_MARGIN_Y) / GRID_CELL_H))
+            occupied_cells.add((cx, cy))
+        except Exception:
+            pass
+
     floor = load_image('floor.png', fallback_color=(200, 200, 200), size=(64, 64))
     wall = load_image('wall.png', fallback_color=(120, 120, 120), size=(64, 64))
     player_img = load_image('player.png', fallback_color=(30, 144, 255), size=(32, 32))
     book_img = load_image('book.png', fallback_color=(255, 215, 0), size=(32, 32))
 
+    # start with 3 rooms; each will be populated with one book and one guardian below
     rooms = [
         {'x': 100, 'y': 80, 'w': 200, 'h': 140},
         {'x': 420, 'y': 100, 'w': 240, 'h': 160},
@@ -216,10 +385,57 @@ def main():
             Guardian(520, 380, required_score=4, questions=make_sample_questions()),
         ]
 
+    # populate initial rooms: ensure each starting room has 1 book and 1 guardian
+    for r in rooms:
+        # avoid double-population if file provided explicit placements
+        rr = pygame.Rect(r['x'], r['y'], r['w'], r['h'])
+        has_book = any(rr.colliderect(b.rect()) for b in books)
+        has_guard = any(rr.colliderect(g.rect()) for g in guardians)
+        if not has_book or not has_guard:
+            populate_room_with_book_guard(r)
+
+    # mark these initial rooms as occupied in the grid
+    def mark_room_occupied(r):
+        try:
+            cx = int(round((r['x'] - GRID_MARGIN_X) / GRID_CELL_W))
+            cy = int(round((r['y'] - GRID_MARGIN_Y) / GRID_CELL_H))
+            occupied_cells.add((cx, cy))
+        except Exception:
+            pass
+
+    for r in rooms:
+        mark_room_occupied(r)
+
+    def get_room_for_guardian(g):
+        # return the room dict that contains the guardian (by center point)
+        for r in rooms:
+            rr = pygame.Rect(r['x'], r['y'], r['w'], r['h'])
+            if rr.collidepoint(g.x, g.y):
+                return r
+        return None
+
+    # ensure guardians are located inside rooms; if not, place them in random existing rooms
+    if rooms:
+        for g in guardians:
+            grect = g.rect()
+            inside = False
+            for r in rooms:
+                rr = pygame.Rect(r['x'], r['y'], r['w'], r['h'])
+                if rr.colliderect(grect) or rr.contains(grect):
+                    inside = True
+                    break
+            if not inside:
+                r = random.choice(rooms)
+                g.x = r['x'] + r['w']//2 + random.randint(-10, 10)
+                g.y = r['y'] + r['h']//2 + random.randint(-10, 10)
+                print(f'[fix] moved guardian to room center ({g.x},{g.y})')
+
     px, py = WIDTH // 2, HEIGHT // 2
     speed = 240
 
     player_score = 0
+    show_completion = False
+    completion_timer = 0.0
 
     # UI states
     mode = 'play'  # 'play', 'reading', 'guard_question'
@@ -354,13 +570,28 @@ def main():
                                 print(f'[guard] final results: {g_results} -> {correct}/{len(g_questions)} correct')
                                 if correct == len(g_questions) and active_guardian is not None:
                                     active_guardian.defeated = True
-                                    player_score += 2
                                     print(f'[guard] guardian at ({active_guardian.x},{active_guardian.y}) defeated')
                                     # when a guardian is defeated, spawn one extra guardian
                                     spawn_guardians(1)
-                                # when finishing a guardian questionnaire, generate 3 rooms + 2 guardians
-                                add_rooms(3)
-                                spawn_guardians(2)
+                                # when finishing a guardian questionnaire, generate 1 adjacent populated room
+                                # (one room with 1 book + 1 guardian)
+                                base_room = None
+                                try:
+                                    base_room = {'x': active_guardian.x - 40, 'y': active_guardian.y - 40, 'w': 80, 'h': 80}
+                                except Exception:
+                                    base_room = random.choice(rooms) if rooms else None
+                                newr = add_adjacent_room(base_room=base_room)
+                                if newr:
+                                    populate_room_with_book_guard(newr)
+                                # award points for any True entries in g_results that were just evaluated
+                                awarded = 0
+                                for idx, res in enumerate(g_results):
+                                    if res:
+                                        # ensure we only award once: set to None after awarding
+                                        # but to keep simple, sum and then later mark guardian defeated
+                                        awarded += 1
+                                player_score += awarded
+                                print(f'[score] awarded {awarded} points for correct answers')
                                 mode = 'guard_question_results'
                                 result_timer = 0.0
                                 # keep active_guardian until results closed
@@ -396,36 +627,59 @@ def main():
             px += dx * speed * dt
             py += dy * speed * dt
 
-        # draw background tiles
-        for x in range(0, WIDTH, 64):
-            for y in range(0, HEIGHT, 64):
-                screen.blit(floor, (x, y))
+        # camera centered on player
+        cam_x = int(px - WIDTH // 2)
+        cam_y = int(py - HEIGHT // 2)
 
-        # draw rooms
+        # draw background tiles (world-relative, using camera)
+        start_x = cam_x - (cam_x % 64) - 64
+        start_y = cam_y - (cam_y % 64) - 64
+        for x in range(start_x, cam_x + WIDTH + 64, 64):
+            for y in range(start_y, cam_y + HEIGHT + 64, 64):
+                sx = x - cam_x
+                sy = y - cam_y
+                screen.blit(floor, (sx, sy))
+
+        # draw rooms (world -> screen)
         for r in rooms:
-            pygame.draw.rect(screen, (170, 170, 170), (r['x'], r['y'], r['w'], r['h']))
-            screen.blit(wall, (r['x'], r['y']))
+            rx = r['x'] - cam_x
+            ry = r['y'] - cam_y
+            pygame.draw.rect(screen, (170, 170, 170), (rx, ry, r['w'], r['h']))
+            # draw wall texture at room top-left
+            screen.blit(wall, (rx, ry))
 
-        # draw books
+        # draw books (world -> screen)
         for b in books:
+            bx = b.x - cam_x
+            by = b.y - cam_y
             if not b.read:
-                screen.blit(book_img, (b.x, b.y))
+                screen.blit(book_img, (bx, by))
             else:
                 # dim read books
                 s = pygame.Surface((b.w, b.h), pygame.SRCALPHA)
                 s.fill((100, 100, 100, 180))
-                screen.blit(s, (b.x, b.y))
+                screen.blit(s, (bx, by))
 
-        # draw guardians
+        # draw guardians (world -> screen)
         for g in guardians:
+            gx = g.x - cam_x
+            gy = g.y - cam_y
             color = (200, 50, 50) if not g.defeated else (80, 160, 80)
-            pygame.draw.rect(screen, color, (g.x, g.y, g.w, g.h))
+            pygame.draw.rect(screen, color, (gx, gy, g.w, g.h))
 
-        # draw player
-        screen.blit(player_img, (int(px) - 16, int(py) - 16))
+        # draw player (world -> screen)
+        screen.blit(player_img, (int(px - cam_x) - 16, int(py - cam_y) - 16))
 
-        # HUD
-        hud = big_font.render(f'Score: {player_score}', True, (255, 255, 255))
+        # HUD: Score and max possible
+        # compute max possible remaining points: unread books + total remaining unanswered questions
+        unread_book_points = sum(b.points for b in books if not b.read)
+        remaining_questions = 0
+        for g in guardians:
+            if not g.defeated:
+                remaining_questions += len(g.questions)
+        # each question gives 1 point when correct
+        max_possible = player_score + unread_book_points + remaining_questions
+        hud = big_font.render(f'Score: {player_score}  |  Max possible: {max_possible}', True, (255, 255, 255))
         screen.blit(hud, (10, 10))
 
         # interaction hint
@@ -440,6 +694,47 @@ def main():
         if near_text:
             tip = font.render(near_text, True, (255, 255, 0))
             screen.blit(tip, (10, HEIGHT - 30))
+
+        # minimap (top-right)
+        try:
+            mm_w, mm_h = 180, 140
+            mm_x, mm_y = WIDTH - mm_w - 10, 10
+            # minimap background 50% transparent
+            mm_surf = pygame.Surface((mm_w, mm_h), pygame.SRCALPHA)
+            mm_surf.fill((40, 40, 60, 128))
+            screen.blit(mm_surf, (mm_x, mm_y))
+            # world bounds from rooms
+            if rooms:
+                min_x = min(r['x'] for r in rooms)
+                min_y = min(r['y'] for r in rooms)
+                max_x = max(r['x'] + r['w'] for r in rooms)
+                max_y = max(r['y'] + r['h'] for r in rooms)
+            else:
+                min_x = 0; min_y = 0; max_x = WIDTH; max_y = HEIGHT
+            world_w = max(1, max_x - min_x)
+            world_h = max(1, max_y - min_y)
+            sx = mm_w / world_w
+            sy = mm_h / world_h
+            scale = min(sx, sy)
+            # draw rooms
+            for r in rooms:
+                rx = int((r['x'] - min_x) * scale)
+                ry = int((r['y'] - min_y) * scale)
+                rw = max(2, int(r['w'] * scale))
+                rh = max(2, int(r['h'] * scale))
+                pygame.draw.rect(screen, (100, 100, 140), (mm_x + rx, mm_y + ry, rw, rh))
+            # draw guardians
+            for g in guardians:
+                color = (200, 50, 50) if not g.defeated else (80, 160, 80)
+                gx = int((g.x - min_x) * scale)
+                gy = int((g.y - min_y) * scale)
+                pygame.draw.circle(screen, color, (mm_x + gx, mm_y + gy), 3)
+            # draw player
+            px_mm = int((px - min_x) * scale)
+            py_mm = int((py - min_y) * scale)
+            pygame.draw.circle(screen, (30, 144, 255), (mm_x + px_mm, mm_y + py_mm), 4)
+        except Exception:
+            pass
 
         # reading UI
         if mode == 'reading' and read_lines:
@@ -519,7 +814,7 @@ def main():
             hint = font.render('1/2/3 select, ←/→ nav, SPACE confirm', True, (80, 80, 80))
             screen.blit(hint, (box_x + 10, box_y + box_h - 30))
 
-        # handle results timer and exit when in results mode
+    # handle results timer and exit when in results mode
         if mode == 'guard_question_results':
             result_timer += dt
             # allow user to press SPACE to close immediately
@@ -531,6 +826,28 @@ def main():
                 g_selected = []
                 g_results = []
                 g_q_index = 0
+
+        # completion: if there are no more undefeated guardians, show message
+        if not show_completion:
+            remaining = len([g for g in guardians if not g.defeated])
+            if remaining == 0:
+                show_completion = True
+                completion_timer = 0.0
+                print('[game] player answered all guardians')
+
+        if show_completion:
+            completion_timer += dt
+            # render a centered completion message
+            cm_txt = big_font.render('Você respondeu todos os guardiões! Parabéns!', True, (255, 220, 0))
+            cm_sub = font.render(f'Score final: {player_score}  |  Max possível: {max_possible}', True, (200, 200, 200))
+            cx = (WIDTH - cm_txt.get_width()) // 2
+            cy = (HEIGHT - cm_txt.get_height()) // 2 - 20
+            screen.blit(cm_txt, (cx, cy))
+            screen.blit(cm_sub, (cx, cy + 40))
+            # after showing for 6 seconds, keep on screen but stop spawning further guardians
+            if completion_timer > 6.0:
+                # prevent further spawns by setting a flag; spawn_guardians will check this
+                pass
 
         pygame.display.flip()
 
