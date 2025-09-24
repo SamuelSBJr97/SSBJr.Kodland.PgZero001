@@ -16,6 +16,7 @@ IMG_DIR = ROOT / 'src' / 'game' / 'images'
 WIDTH, HEIGHT = 800, 600
 FPS = 60
 
+MAP_WIDTH, MAP_HEIGHT = 4000, 4000
 
 def load_image(name, fallback_color=None, size=None):
     p = IMG_DIR / name
@@ -161,7 +162,7 @@ def main():
             
             for x, y in directions:
                 # check bounds
-                if x < 50 or y < 60 or x + w > WIDTH - 50 or y + h > HEIGHT - 50:
+                if x < 50 or y < 60 or x + w > MAP_WIDTH - 50 or y + h > MAP_HEIGHT - 50:
                     continue
                 
                 new_room = {'x': x, 'y': y, 'w': w, 'h': h}
@@ -183,8 +184,8 @@ def main():
             h = random.randint(120, 200)
             
             # try random position on map
-            x = random.randint(50, WIDTH - w - 50)
-            y = random.randint(60, HEIGHT - h - 50)
+            x = random.randint(50, MAP_WIDTH - w - 50)
+            y = random.randint(60, MAP_HEIGHT - h - 50)
             
             new_room = {'x': x, 'y': y, 'w': w, 'h': h}
             
